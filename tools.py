@@ -1,3 +1,8 @@
+import numpy as np
+import tensorflow as tf
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from tensorflow import keras
+
 def str_to_int_list(values):
     try:
         og_values = values  # to track errors
@@ -21,3 +26,46 @@ def str_to_str_list(values):
 
 def remove_duplicates(input_list):
     return list(dict.fromkeys(input_list))
+
+
+def do_scaling(x):
+    scaler = StandardScaler()
+    return scaler.fit_transform(x)
+
+
+def do_one_hot(y):
+    encode = OneHotEncoder()
+    return encode.fit_transform(y[:, np.newaxis]).toarray()
+
+
+def split_nparray_to_3(array, r1, r2, r3):
+    if r1 + r2 + r3 != 1.0:
+        print("Dataset split (train:validation:test) ratios must sum to 1.0!")
+        exit(0)
+    else:
+        try:
+            train, validation, test = np.split(array, [int(r1 * len(array)), int((r1+r2) * len(array))])
+            return train, validation, test
+        except ValueError:
+            print("Splitting dataset did not result in an equal division")
+            exit(0)
+
+
+# (X_train, Y_train), (X_test, Y_test) = keras.datasets.mnist.load_data()
+#
+# X = np.concatenate((X_train, X_test))
+# X = tf.reshape(X, [70000, 784])
+#
+# Y = np.concatenate((Y_train, Y_test))
+#
+# scaler = StandardScaler()
+# X = scaler.fit_transform(X)
+#
+# encode = OneHotEncoder()
+# Y = encode.fit_transform(Y[:, np.newaxis]).toarray()
+#
+# print(X.shape)
+# print(Y.shape)
+#
+# print(X[15])
+# print(Y[15])

@@ -16,7 +16,7 @@ output_act_func = "softmax"
 hall_of_fame = []
 
 ag = ArchGen(n_output_neurons, output_act_func, selected_loss)
-X_train, Y_train, X_test, Y_test = ag.read_dataset()
+x_train, y_train, x_val, y_val, x_test, y_test = ag.read_dataset()
 
 model_collection = ag.generate_archs()
 
@@ -26,9 +26,9 @@ for model in model_collection:
                   metrics=['accuracy'])
 
     # reduce the number of epochs for MNIST datasets
-    model.fit(x=X_train, y=Y_train, epochs=15)
+    model.fit(x=x_train, y=y_train, validation_data=(x_val, y_val), epochs=10)
 
-    test_loss, test_accuracy = model.evaluate(X_test, Y_test, verbose=0)
+    test_loss, test_accuracy = model.evaluate(x_test, y_test, verbose=0)
 
     print("test accuracy: " + str(test_accuracy))
 

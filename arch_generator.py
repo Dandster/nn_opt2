@@ -31,14 +31,30 @@ class ArchGen:
 
     def read_dataset(self):
 
+        #  udelat rozdeleni na train validation test
+        #  scaling a onehot
+
         dataset = self.config['dataset']
 
-        x_train = np.loadtxt(dataset['x_train'], delimiter=',')
-        y_train = np.loadtxt(dataset['y_train'], delimiter=',')
-        x_test = np.loadtxt(dataset['x_test'], delimiter=',')
-        y_test = np.loadtxt(dataset['y_test'], delimiter=',')
+        x = np.loadtxt(dataset['x'], delimiter=',')
+        y = np.loadtxt(dataset['y'], delimiter=',')
 
-        return x_train, y_train, x_test, y_test
+        print(x[15])
+        print(y.shape)
+
+        if bool(dataset['y_do_one_hot']):
+            y = t.do_one_hot(y)
+
+        if bool(dataset['x_do_scaling']):
+            x = t.do_scaling(x)
+
+        print(x[15])
+        print(y.shape)
+
+        x_train, x_val, x_test = t.split_nparray_to_3(x, r1=float(dataset['train_part']), r2=float(dataset['validation_part']), r3=float(dataset['test_part']))
+        y_train, y_val, y_test = t.split_nparray_to_3(y, r1=float(dataset['train_part']), r2=float(dataset['validation_part']), r3=float(dataset['test_part']))
+
+        return x_train, y_train, x_val, y_val, x_test, y_test
 
     def generate_archs(self):
         layers, neurons, activations_funcs = self.read_hyperpars()
@@ -65,7 +81,6 @@ class ArchGen:
                     model.add(cloned_layer)
                 model.add(keras.layers.Dense(self.output_neurons, activation=self.output_function))
                 model_collection.append(model)
-
 
         return model_collection
 
