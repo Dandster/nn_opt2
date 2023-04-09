@@ -1,11 +1,9 @@
 import configparser as config
-import copy
 import itertools
 
 import numpy as np
 
 import tools as t
-import tensorflow as tf
 from tensorflow import keras
 
 
@@ -23,7 +21,12 @@ class ArchGen:
 
         hyperpars = self.config['hyperpars']
 
+        layer_range = bool(hyperpars['layer_range'])
         number_of_layers = t.str_to_int_list(hyperpars['number_of_hidden_layers'])
+
+        if layer_range:
+            number_of_layers = range(1, max(number_of_layers)+1)
+
         number_of_neurons = t.str_to_int_list(hyperpars['number_of_neurons'])
         activation_funcs = t.str_to_str_list(hyperpars['activation_funcs'])
 
@@ -31,25 +34,16 @@ class ArchGen:
 
     def read_dataset(self):
 
-        #  udelat rozdeleni na train validation test
-        #  scaling a onehot
-
         dataset = self.config['dataset']
 
         x = np.loadtxt(dataset['x'], delimiter=',')
         y = np.loadtxt(dataset['y'], delimiter=',')
-
-        print(x[15])
-        print(y.shape)
 
         if bool(dataset['y_do_one_hot']):
             y = t.do_one_hot(y)
 
         if bool(dataset['x_do_scaling']):
             x = t.do_scaling(x)
-
-        print(x[15])
-        print(y.shape)
 
         x_train, x_val, x_test = t.split_nparray_to_3(x, r1=float(dataset['train_part']), r2=float(dataset['validation_part']), r3=float(dataset['test_part']))
         y_train, y_val, y_test = t.split_nparray_to_3(y, r1=float(dataset['train_part']), r2=float(dataset['validation_part']), r3=float(dataset['test_part']))
@@ -63,7 +57,10 @@ class ArchGen:
 
         for i in neurons:
             for j in activations_funcs:
-                possible_layers.append(keras.layers.Dense(i, activation=j))
+                layer_blueprint = keras.layers.Dense(i, activation=j)
+                possible_layers.append(layer_blueprint)
+                #  fixnout jmena mozna??????????????????????????????????????????????????????????????????????
+
 
         model_collection = []
 
@@ -81,6 +78,11 @@ class ArchGen:
                     model.add(cloned_layer)
                 model.add(keras.layers.Dense(self.output_neurons, activation=self.output_function))
                 model_collection.append(model)
+        # #smazat
+        # for i in model_collection:
+        #     print(i)
+        #     for j in i.layers:
+        #         print(j)
 
         return model_collection
 

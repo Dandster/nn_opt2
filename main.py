@@ -48,7 +48,7 @@ for i in hall_of_fame[:3]:
     print("index of structure and its performace: " + str(i))
     print(model_collection[i[0]].summary())
     for j in model_collection[i[0]].layers:
-        print((j.name, j.activation))
+        print((j, j.activation))
     print("----------------------------------------------------------------------")
     print("----------------------------------------------------------------------")
     print("----------------------------------------------------------------------")
