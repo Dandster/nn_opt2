@@ -1,7 +1,9 @@
 import numpy as np
+import sklearn
 import tensorflow as tf
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from tensorflow import keras
+
 
 def str_to_int_list(values):
     try:
@@ -51,21 +53,9 @@ def split_nparray_to_3(array, r1, r2, r3):
             exit(0)
 
 
-# (X_train, Y_train), (X_test, Y_test) = keras.datasets.mnist.load_data()
-#
-# X = np.concatenate((X_train, X_test))
-# X = tf.reshape(X, [70000, 784])
-#
-# Y = np.concatenate((Y_train, Y_test))
-#
-# scaler = StandardScaler()
-# X = scaler.fit_transform(X)
-#
-# encode = OneHotEncoder()
-# Y = encode.fit_transform(Y[:, np.newaxis]).toarray()
-#
-# print(X.shape)
-# print(Y.shape)
-#
-# print(X[15])
-# print(Y[15])
+def print_confusion_matrix(model, x_test, y_test):
+    y_pred = model.predict(x_test)
+    y_pred = np.argmax(y_pred, axis=1)
+    y_test = np.argmax(y_test, axis=1)
+    cm = sklearn.metrics.confusion_matrix(y_test, y_pred)
+    print(cm)

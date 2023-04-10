@@ -1,13 +1,20 @@
 import tensorflow as tf
 from tensorflow import keras
+import configparser as config
+import tools as t
 from arch_generator import ArchGen
 
 import numpy as np
 import pandas as pd
 
+import sklearn
 from sklearn import datasets
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder, StandardScaler, LabelEncoder
+
+config = config.ConfigParser()
+config.read('conf.ini')
+metrics = config['metrics']
 
 n_output_neurons = 10
 selected_loss = "categorical_crossentropy"
@@ -23,12 +30,16 @@ model_collection = ag.generate_archs()
 for model in model_collection:
     model.compile(optimizer='adam',
                   loss=selected_loss,
-                  metrics=['accuracy'])
+                  metrics=[keras.metrics.CategoricalAccuracy(), keras.metrics.Recall(class_id=0)])
 
     # reduce the number of epochs for MNIST datasets
     model.fit(x=x_train, y=y_train, validation_data=(x_val, y_val), epochs=10)
 
-    test_loss, test_accuracy = model.evaluate(x_test, y_test, verbose=0)
+    test_loss, test_accuracy, test_recall = model.evaluate(x_test, y_test, verbose=0)
+
+    #  pridat funkci do tools na zobrazeni metrik, podobnou jak je tato na confusion matrix
+    if eval(metrics['print_confusion_matrix']):
+        t.print_confusion_matrix(model, x_test, y_test)
 
     print("test accuracy: " + str(test_accuracy))
 
