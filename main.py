@@ -38,8 +38,12 @@ for model in model_collection:
     test_loss, test_accuracy, test_recall = model.evaluate(x_test, y_test, verbose=0)
 
     #  pridat funkci do tools na zobrazeni metrik, podobnou jak je tato na confusion matrix
+    #  toto jeste predelat, at nevolam model.predict vickrat jak blbec!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     if eval(metrics['print_confusion_matrix']):
         t.print_confusion_matrix(model, x_test, y_test)
+
+    if eval(metrics['print_classification_report']):
+        t.print_classification_report(model, x_test, y_test)
 
     print("test accuracy: " + str(test_accuracy))
 

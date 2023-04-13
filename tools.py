@@ -59,3 +59,11 @@ def print_confusion_matrix(model, x_test, y_test):
     y_test = np.argmax(y_test, axis=1)
     cm = sklearn.metrics.confusion_matrix(y_test, y_pred)
     print(cm)
+
+
+def print_classification_report(model, x_test, y_test):
+    y_pred = model.predict(x_test)
+    y_pred = np.argmax(y_pred, axis=1)
+    y_test = np.argmax(y_test, axis=1)
+    cr = sklearn.metrics.classification_report(y_test, y_pred)
+    print(cr)
