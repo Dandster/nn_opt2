@@ -4,17 +4,10 @@ import configparser as config
 import tools as t
 from arch_generator import ArchGen
 
-import numpy as np
-import pandas as pd
-
-import sklearn
-from sklearn import datasets
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder, StandardScaler, LabelEncoder
 
 config = config.ConfigParser()
 config.read('conf.ini')
-metrics = config['metrics']
+visualize_results = config['visualize_results']
 
 n_output_neurons = 10
 selected_loss = "categorical_crossentropy"
@@ -30,29 +23,38 @@ model_collection = ag.generate_archs()
 for model in model_collection:
     model.compile(optimizer='adam',
                   loss=selected_loss,
-                  metrics=[keras.metrics.CategoricalAccuracy(), keras.metrics.Recall(class_id=0)])
+                  metrics='accuracy')
 
     # reduce the number of epochs for MNIST datasets
     model.fit(x=x_train, y=y_train, validation_data=(x_val, y_val), epochs=10)
 
-    test_loss, test_accuracy, test_recall = model.evaluate(x_test, y_test, verbose=0)
+    test_loss, test_accuracy, = model.evaluate(x_test, y_test, verbose=0)
 
-    #  pridat funkci do tools na zobrazeni metrik, podobnou jak je tato na confusion matrix
-    #  toto jeste predelat, at nevolam model.predict vickrat jak blbec!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    if eval(metrics['print_confusion_matrix']):
-        t.print_confusion_matrix(model, x_test, y_test)
+    y_pred_amax, y_test_amax = t.get_predictions(model, x_test, y_test)
 
-    if eval(metrics['print_classification_report']):
-        t.print_classification_report(model, x_test, y_test)
+    if eval(visualize_results['print_confusion_matrix']):
+        cm = t.print_confusion_matrix(y_test_amax, y_pred_amax)
+    else:
+        cm = 'Confusion matrix was not generated'
+
+    if eval(visualize_results['print_classification_report']):
+        cr = t.print_classification_report(y_test_amax, y_pred_amax)
+    else:
+        cr = 'Classification report was not generated'
+
+    acc, pre, rec, f1 = t.calculate_metrics(y_test_amax, y_pred_amax)
 
     print("test accuracy: " + str(test_accuracy))
+    print(f'sklearn acc= {acc:.4f}')
 
-    hall_of_fame.append((model_collection.index(model), test_accuracy))
+    model_results = {'model': model, 'accuracy': acc, 'precision': pre, 'f1': f1, 'classification_report': cr, 'confusion_matrix': cm}
+
+    hall_of_fame.append(model_results)
 
 
-# Sort by best performace, print top 3 structures
+#  tu musim dat moznost volby podle jake metriky potridime
 def sort_by_performance(e):
-    return e[1]
+    return e['accuracy']
 
 
 hall_of_fame.sort(key=sort_by_performance, reverse=True)
@@ -60,15 +62,10 @@ print("number of structures tested: " + str(len(hall_of_fame)))
 print(len(model_collection))
 
 for i in hall_of_fame[:3]:
-    print("index of structure and its performace: " + str(i))
-    print(model_collection[i[0]].summary())
-    for j in model_collection[i[0]].layers:
-        print((j, j.activation))
-    print("----------------------------------------------------------------------")
-    print("----------------------------------------------------------------------")
-    print("----------------------------------------------------------------------")
+    print("Structure: ")
+    t.print_model_layers_and_activations(i['model'])
+    print(i['confusion_matrix'])
 
-hall_of_fame.clear()
 
 
 

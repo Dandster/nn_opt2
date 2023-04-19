@@ -1,5 +1,6 @@
 import numpy as np
 import sklearn
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
 import tensorflow as tf
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from tensorflow import keras
@@ -49,21 +50,42 @@ def split_nparray_to_3(array, r1, r2, r3):
             train, validation, test = np.split(array, [int(r1 * len(array)), int((r1+r2) * len(array))])
             return train, validation, test
         except ValueError:
-            print("Splitting dataset did not result in an equal division")
+            print("Splitting dataset did not result in a given division, try different ratios")
             exit(0)
 
 
-def print_confusion_matrix(model, x_test, y_test):
+def get_predictions(model, x_test, y_test):
     y_pred = model.predict(x_test)
     y_pred = np.argmax(y_pred, axis=1)
     y_test = np.argmax(y_test, axis=1)
-    cm = sklearn.metrics.confusion_matrix(y_test, y_pred)
+
+    return y_pred, y_test
+
+
+def print_confusion_matrix(y_test, y_pred):
+    cm = confusion_matrix(y_test, y_pred)
     print(cm)
 
+    return cm
 
-def print_classification_report(model, x_test, y_test):
-    y_pred = model.predict(x_test)
-    y_pred = np.argmax(y_pred, axis=1)
-    y_test = np.argmax(y_test, axis=1)
-    cr = sklearn.metrics.classification_report(y_test, y_pred)
+
+def print_classification_report(y_test, y_pred):
+    cr = classification_report(y_test, y_pred)
     print(cr)
+
+    return cr
+
+
+def calculate_metrics(y_test, y_pred):
+    acc = accuracy_score(y_test, y_pred)
+    pre = precision_score(y_test, y_pred, average='weighted')
+    rec = recall_score(y_test, y_pred, average='weighted')
+    f1 = f1_score(y_test, y_pred, average='weighted')
+
+    return acc, pre, rec, f1
+
+
+def print_model_layers_and_activations(model):
+    print(f"Number of layers: {len(model.layers)}")
+    for i, layer in enumerate(model.layers):
+        print(f"Layer {i+1}: {layer.name} ({layer.activation.__name__}), Number of neurons: {layer.units}")
