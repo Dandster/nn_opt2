@@ -70,7 +70,7 @@ def print_confusion_matrix(y_test, y_pred):
 
 
 def print_classification_report(y_test, y_pred):
-    cr = classification_report(y_test, y_pred)
+    cr = classification_report(y_test, y_pred, digits=5)
     print(cr)
 
     return cr
@@ -89,3 +89,20 @@ def print_model_layers_and_activations(model):
     print(f"Number of layers: {len(model.layers)}")
     for i, layer in enumerate(model.layers):
         print(f"Layer {i+1}: {layer.name} ({layer.activation.__name__}), Number of neurons: {layer.units}")
+
+
+def sort_hall(list_of_strucs, config):
+    metrics = [config.getboolean('sort_by', 'accuracy'), config.getboolean('sort_by', 'precision'),
+               config.getboolean('sort_by', 'recall'), config.getboolean('sort_by', 'f1')]
+
+    if metrics.count(True) != 1:
+        print("Sorting metrics were not properly specified, so I am sorting by accuracy")
+        list_of_strucs.sort(key=lambda x: x.get('accuracy'), reverse=True)
+    elif metrics[0]:
+        list_of_strucs.sort(key=lambda x: x.get('accuracy'), reverse=True)
+    elif metrics[1]:
+        list_of_strucs.sort(key=lambda x: x.get('precision'), reverse=True)
+    elif metrics[2]:
+        list_of_strucs.sort(key=lambda x: x.get('recall'), reverse=True)
+    else:
+        list_of_strucs.sort(key=lambda x: x.get('f1'), reverse=True)

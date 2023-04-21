@@ -47,24 +47,20 @@ for model in model_collection:
     print("test accuracy: " + str(test_accuracy))
     print(f'sklearn acc= {acc:.4f}')
 
-    model_results = {'model': model, 'accuracy': acc, 'precision': pre, 'f1': f1, 'classification_report': cr, 'confusion_matrix': cm}
+    model_results = {'model': model, 'accuracy': acc, 'precision': pre, 'recall': rec, 'f1': f1, 'classification_report': cr, 'confusion_matrix': cm}
 
     hall_of_fame.append(model_results)
 
 
-#  tu musim dat moznost volby podle jake metriky potridime
-def sort_by_performance(e):
-    return e['accuracy']
-
-
-hall_of_fame.sort(key=sort_by_performance, reverse=True)
+t.sort_hall(hall_of_fame, config)
+# hall_of_fame.sort(key=t.sort_by_performance, reverse=True)
 print("number of structures tested: " + str(len(hall_of_fame)))
 print(len(model_collection))
 
 for i in hall_of_fame[:3]:
-    print("Structure: ")
+    print("Structure performance: \n" + str(i['classification_report']))
     t.print_model_layers_and_activations(i['model'])
-    print(i['confusion_matrix'])
+
 
 
 
