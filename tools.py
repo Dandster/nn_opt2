@@ -1,4 +1,5 @@
 import numpy as np
+import threading
 import sklearn
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
 import tensorflow as tf
@@ -6,9 +7,56 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from tensorflow import keras
 
 
+def train_model(config, model, x_train, y_train, x_val, y_val, x_test, y_test, hall_of_fame):
+    model.compile(optimizer=config['learning_settings']['optimizer'],
+                  loss=config['learning_settings']['loss_function'],
+                  metrics='accuracy')
+
+    model.fit(x=x_train, y=y_train, validation_data=(x_val, y_val), epochs=config.getint('learning_settings', 'epochs'), verbose=1)
+
+    test_loss, test_accuracy, = model.evaluate(x_test, y_test, verbose=0)
+
+    y_pred_amax, y_test_amax = get_predictions(model, x_test, y_test)
+
+    if eval(config['visualize_results']['print_confusion_matrix']):
+        cm = print_confusion_matrix(y_test_amax, y_pred_amax)
+    else:
+        cm = 'Confusion matrix was not generated'
+
+    if eval(config['visualize_results']['print_classification_report']):
+        cr = print_classification_report(y_test_amax, y_pred_amax)
+    else:
+        cr = 'Classification report was not generated'
+
+    acc, pre, rec, f1 = calculate_metrics(y_test_amax, y_pred_amax)
+
+    print("test accuracy: " + str(test_accuracy))
+
+    model_results = {'model': model, 'accuracy': acc, 'precision': pre, 'recall': rec, 'f1': f1,
+                     'classification_report': cr, 'confusion_matrix': cm}
+
+    hall_of_fame.append(model_results)
+
+
+def train_models(models, config, x_train, y_train, x_val, y_val, x_test, y_test, hall_of_fame):
+    if config.getboolean('learning_settings', 'multithreading'):
+        threads = []
+        for model in models:
+            t = threading.Thread(target=train_model, args=(config, model, x_train, y_train, x_val,
+                                                           y_val, x_test, y_test, hall_of_fame))
+            threads.append(t)
+            t.start()
+
+        for t in threads:
+            t.join()
+    else:
+        for model in models:
+            train_model(config, model, x_train, y_train, x_val, y_val, x_test, y_test, hall_of_fame)
+
+
 def str_to_int_list(values):
+    og_values = values
     try:
-        og_values = values  # to track errors
         values = ''.join(values.split())
         splits = values.split(sep=",")
         return remove_duplicates([int(s) for s in splits])
@@ -18,8 +66,8 @@ def str_to_int_list(values):
 
 
 def str_to_str_list(values):
+    og_values = values
     try:
-        og_values = values  # to track errors
         values = ''.join(values.split())
         return remove_duplicates(values.split(sep=","))
     except ValueError:

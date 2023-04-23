@@ -9,13 +9,17 @@ from tensorflow import keras
 
 class ArchGen:
 
-    def __init__(self, number_of_output_neurons, output_activation_func, selected_loss):
-        self.output_neurons = number_of_output_neurons  # based on task type, manually given by user
-        self.output_function = output_activation_func  # based on task type
-        self.selected_loss = selected_loss  # based on task type MOZNA ODDELAT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+    def __init__(self):
         self.config = config.ConfigParser()
         self.config.read('conf.ini')
+
+        self.output_neurons = self.config.getint('learning_settings', 'output_neurons')
+        self.output_function = self.config['learning_settings']['output_activation']
+        self.selected_loss = self.config['learning_settings']['loss_function']
+        self.epochs = self.config.getint('learning_settings', 'epochs')
+
+    def get_learning_params(self):
+        return self.selected_loss, self.epochs, self.output_neurons, self.output_function
 
     def read_hyperpars(self):
 
