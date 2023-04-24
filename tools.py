@@ -1,3 +1,6 @@
+import os
+
+import keras
 import numpy as np
 import threading
 import sklearn
@@ -12,25 +15,21 @@ def train_model(config, model, x_train, y_train, x_val, y_val, x_test, y_test, h
                   loss=config['learning_settings']['loss_function'],
                   metrics='accuracy')
 
-    model.fit(x=x_train, y=y_train, validation_data=(x_val, y_val), epochs=config.getint('learning_settings', 'epochs'), verbose=1)
-
-    test_loss, test_accuracy, = model.evaluate(x_test, y_test, verbose=0)
+    model.fit(x=x_train, y=y_train, validation_data=(x_val, y_val), epochs=config.getint('learning_settings', 'epochs'), verbose=0)
 
     y_pred_amax, y_test_amax = get_predictions(model, x_test, y_test)
 
-    if eval(config['visualize_results']['print_confusion_matrix']):
+    if eval(config['visualize_results']['generate_confusion_matrix']):
         cm = print_confusion_matrix(y_test_amax, y_pred_amax)
     else:
         cm = 'Confusion matrix was not generated'
 
-    if eval(config['visualize_results']['print_classification_report']):
+    if eval(config['visualize_results']['generate_classification_report']):
         cr = print_classification_report(y_test_amax, y_pred_amax)
     else:
         cr = 'Classification report was not generated'
 
     acc, pre, rec, f1 = calculate_metrics(y_test_amax, y_pred_amax)
-
-    print("test accuracy: " + str(test_accuracy))
 
     model_results = {'model': model, 'accuracy': acc, 'precision': pre, 'recall': rec, 'f1': f1,
                      'classification_report': cr, 'confusion_matrix': cm}
@@ -39,7 +38,9 @@ def train_model(config, model, x_train, y_train, x_val, y_val, x_test, y_test, h
 
 
 def train_models(models, config, x_train, y_train, x_val, y_val, x_test, y_test, hall_of_fame):
+
     if config.getboolean('learning_settings', 'multithreading'):
+        print(f'Training {len(models)} models using multithreading...')
         threads = []
         for model in models:
             t = threading.Thread(target=train_model, args=(config, model, x_train, y_train, x_val,
@@ -50,6 +51,7 @@ def train_models(models, config, x_train, y_train, x_val, y_val, x_test, y_test,
         for t in threads:
             t.join()
     else:
+        print(f'Training {len(models)} models using single thread...')
         for model in models:
             train_model(config, model, x_train, y_train, x_val, y_val, x_test, y_test, hall_of_fame)
 
@@ -112,14 +114,14 @@ def get_predictions(model, x_test, y_test):
 
 def print_confusion_matrix(y_test, y_pred):
     cm = confusion_matrix(y_test, y_pred)
-    print(cm)
+    #  print(cm)
 
     return cm
 
 
 def print_classification_report(y_test, y_pred):
     cr = classification_report(y_test, y_pred, digits=5)
-    print(cr)
+    #  print(cr)
 
     return cr
 
@@ -133,10 +135,15 @@ def calculate_metrics(y_test, y_pred):
     return acc, pre, rec, f1
 
 
-def print_model_layers_and_activations(model):
-    print(f"Number of layers: {len(model.layers)}")
+def get_model_layers_and_activations(model):
+    #  print(f"Number of layers: {len(model.layers)}")
+    desc = [f"Number of layers: {len(model.layers)}"]
     for i, layer in enumerate(model.layers):
-        print(f"Layer {i+1}: {layer.name} ({layer.activation.__name__}), Number of neurons: {layer.units}")
+        #  print(f"Layer {i+1}: {layer.name} ({layer.activation.__name__}), Number of neurons: {layer.units}")
+        desc.append(f"Layer {i+1}: {layer.name} ({layer.activation.__name__}), Number of neurons: {layer.units}")
+
+    desc = "\n".join(desc)
+    return desc
 
 
 def sort_hall(list_of_strucs, config):
@@ -154,3 +161,42 @@ def sort_hall(list_of_strucs, config):
         list_of_strucs.sort(key=lambda x: x.get('recall'), reverse=True)
     else:
         list_of_strucs.sort(key=lambda x: x.get('f1'), reverse=True)
+
+
+def format_model_results(model_results):
+    formatted_list = []
+    for key, value in model_results.items():
+        if isinstance(value, keras.Sequential):
+            formatted_list.append(get_model_layers_and_activations(value))
+        elif isinstance(value, str):
+            formatted_list.append(f"{key}: \n{value}")
+        elif isinstance(value, (int, float)):
+            formatted_list.append(f"{key}: \n{value:.5f}")
+        else:
+            formatted_list.append(f"{key}: \n{repr(value)}")
+    formatted_string = "\n".join(formatted_list)
+    return formatted_string
+
+
+def save_models(models, how_many, folder_path):
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+
+    for i, model in enumerate(models[:how_many]):
+        model_path = os.path.join(folder_path, f"model_{i}")
+        os.makedirs(model_path, exist_ok=True)
+        model['model'].save(os.path.join(model_path, "model"), save_format='h5')
+
+        description = format_model_results(model)
+
+        description_file_path = os.path.join(model_path, "description.txt")
+        with open(description_file_path, "w") as f:
+            f.write(description)
+
+
+def print_top_struct(config, hall):
+    for i, model in enumerate(hall[:config.getint('visualize_results', 'print_top')]):
+        print('////////////////////////////////////////////////////////////////////')
+        print(f'[{i}]')
+        print(format_model_results(model))
+        print('////////////////////////////////////////////////////////////////////')

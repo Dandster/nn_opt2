@@ -21,13 +21,12 @@ t.train_models(model_collection, config, x_train, y_train, x_val, y_val, x_test,
 
 t.sort_hall(hall_of_fame, config)
 # hall_of_fame.sort(key=t.sort_by_performance, reverse=True)
-print("number of structures tested: " + str(len(hall_of_fame)))
-print(len(model_collection))
+print("TRAINING COMPLETED")
 
-for i in hall_of_fame[:3]:
-    print("Structure performance: \n" + str(i['classification_report']))
-    t.print_model_layers_and_activations(i['model'])
+t.print_top_struct(config, hall_of_fame)
 
+if config.getboolean('save_models', 'save'):
+    t.save_models(hall_of_fame, config.getint('save_models', 'save_top'), config['save_models']['path'])
 
 end_time = time.time()
 total_time = end_time - start_time
