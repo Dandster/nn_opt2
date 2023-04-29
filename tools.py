@@ -4,18 +4,20 @@ import keras
 import numpy as np
 import threading
 import sklearn
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, \
+    f1_score
 import tensorflow as tf
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from tensorflow import keras
 
 
-def train_model(config, model, x_train, y_train, x_val, y_val, x_test, y_test, hall_of_fame):
+def train_model(config, model, x_train, y_train, x_val, y_val, x_test, y_test, hall_of_fame, verb):
     model.compile(optimizer=config['learning_settings']['optimizer'],
                   loss=config['learning_settings']['loss_function'],
                   metrics='accuracy')
 
-    model.fit(x=x_train, y=y_train, validation_data=(x_val, y_val), epochs=config.getint('learning_settings', 'epochs'), verbose=0)
+    model.fit(x=x_train, y=y_train, validation_data=(x_val, y_val), batch_size=config.getint('learning_settings', 'batch_size'),
+              epochs=config.getint('learning_settings', 'epochs'), verbose=verb)
 
     y_pred_amax, y_test_amax = get_predictions(model, x_test, y_test)
 
@@ -38,13 +40,12 @@ def train_model(config, model, x_train, y_train, x_val, y_val, x_test, y_test, h
 
 
 def train_models(models, config, x_train, y_train, x_val, y_val, x_test, y_test, hall_of_fame):
-
     if config.getboolean('learning_settings', 'multithreading'):
         print(f'Training {len(models)} models using multithreading...')
         threads = []
         for model in models:
             t = threading.Thread(target=train_model, args=(config, model, x_train, y_train, x_val,
-                                                           y_val, x_test, y_test, hall_of_fame))
+                                                           y_val, x_test, y_test, hall_of_fame, 0))
             threads.append(t)
             t.start()
 
@@ -53,7 +54,7 @@ def train_models(models, config, x_train, y_train, x_val, y_val, x_test, y_test,
     else:
         print(f'Training {len(models)} models using single thread...')
         for model in models:
-            train_model(config, model, x_train, y_train, x_val, y_val, x_test, y_test, hall_of_fame)
+            train_model(config, model, x_train, y_train, x_val, y_val, x_test, y_test, hall_of_fame, 1)
 
 
 def str_to_int_list(values):
@@ -97,7 +98,7 @@ def split_nparray_to_3(array, r1, r2, r3):
         exit(0)
     else:
         try:
-            train, validation, test = np.split(array, [int(r1 * len(array)), int((r1+r2) * len(array))])
+            train, validation, test = np.split(array, [int(r1 * len(array)), int((r1 + r2) * len(array))])
             return train, validation, test
         except ValueError:
             print("Splitting dataset did not result in a given division, try different ratios")
@@ -140,7 +141,7 @@ def get_model_layers_and_activations(model):
     desc = [f"Number of layers: {len(model.layers)}"]
     for i, layer in enumerate(model.layers):
         #  print(f"Layer {i+1}: {layer.name} ({layer.activation.__name__}), Number of neurons: {layer.units}")
-        desc.append(f"Layer {i+1}: {layer.name} ({layer.activation.__name__}), Number of neurons: {layer.units}")
+        desc.append(f"Layer {i + 1}: {layer.name} ({layer.activation.__name__}), Number of neurons: {layer.units}")
 
     desc = "\n".join(desc)
     return desc

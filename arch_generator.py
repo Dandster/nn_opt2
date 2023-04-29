@@ -9,9 +9,9 @@ from tensorflow import keras
 
 class ArchGen:
 
-    def __init__(self):
+    def __init__(self, conf):
         self.config = config.ConfigParser()
-        self.config.read('conf.ini')
+        self.config.read(conf)
 
         self.output_neurons = self.config.getint('learning_settings', 'output_neurons')
         self.output_function = self.config['learning_settings']['output_activation']
