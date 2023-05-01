@@ -49,6 +49,8 @@ class ArchGen:
         if eval(dataset['x_do_scaling']):
             x = t.do_scaling(x)
 
+        x = x.reshape(t.str_to_int_tuple(dataset['x_shape'])[0])
+
         x_train, x_val, x_test = t.split_nparray_to_3(x, r1=float(dataset['train_part']), r2=float(dataset['validation_part']), r3=float(dataset['test_part']))
         y_train, y_val, y_test = t.split_nparray_to_3(y, r1=float(dataset['train_part']), r2=float(dataset['validation_part']), r3=float(dataset['test_part']))
 
@@ -63,16 +65,16 @@ class ArchGen:
             for j in activations_funcs:
                 layer_blueprint = keras.layers.Dense(i, activation=j)
                 possible_layers.append(layer_blueprint)
-                #  fixnout jmena mozna??????????????????????????????????????????????????????????????????????
 
         model_collection = []
 
-        layer_number = 0#  needed because every layer name must be unique, tohle mozna jde udelat min debilne
+        layer_number = 0
 
         for i in layers:
             prod = itertools.product(possible_layers, repeat=i)
             for j in prod:
                 model = keras.Sequential()
+                #  model.add(keras.layers.Input(shape=(t.str_to_int_tuple(self.config['learning_settings']['input_shape'])[0])))
                 for layer in j:
                     con = layer.get_config()
                     cloned_layer = type(layer).from_config(con)

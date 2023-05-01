@@ -3,12 +3,13 @@ import os
 import keras
 import numpy as np
 import threading
-import sklearn
+from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, \
     f1_score
 import tensorflow as tf
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.preprocessing import OneHotEncoder, MinMaxScaler, StandardScaler
 from tensorflow import keras
+from keras import preprocessing
 
 
 def train_model(config, model, x_train, y_train, x_val, y_val, x_test, y_test, hall_of_fame, verb):
@@ -68,6 +69,18 @@ def str_to_int_list(values):
         exit(0)
 
 
+def str_to_int_tuple(values):
+    og_values = values
+    try:
+        s = "".join(values.split())
+        pairs = s.strip("()").split("),(")
+        tuples = [tuple(map(int, pair.split(","))) for pair in pairs]
+        return tuples
+    except ValueError:
+        print("Reading config unsuccessful, check the formatting of: " + og_values)
+        exit(0)
+
+
 def str_to_str_list(values):
     og_values = values
     try:
@@ -85,6 +98,10 @@ def remove_duplicates(input_list):
 def do_scaling(x):
     scaler = StandardScaler()
     return scaler.fit_transform(x)
+
+    # scaler = StandardScaler()
+    # scaler.fit(x)
+    # return scaler.transform(x)
 
 
 def do_one_hot(y):
@@ -147,6 +164,21 @@ def get_model_layers_and_activations(model):
     return desc
 
 
+def get_cnn_model_info(model):
+    desc = ""
+    desc += f"Number of layers: {len(model.layers)}\n"
+    for i, layer in enumerate(model.layers):
+        if isinstance(layer, Conv2D):
+            desc += f"Layer {i + 1}: Conv2D, {layer.filters} filters, kernel size {layer.kernel_size}, activation function {layer.activation.__name__}\n"
+        elif isinstance(layer, MaxPooling2D):
+            desc += f"Layer {i + 1}: MaxPooling2D layer, pool size {layer.pool_size}\n"
+        elif isinstance(layer, Flatten):
+            desc += f"Layer {i + 1}: Flatten layer\n"
+        elif isinstance(layer, Dense):
+            desc += f"Layer {i + 1}: Dense layer, {layer.units} neurons, activation function {layer.activation.__name__}\n"
+    return desc
+
+
 def sort_hall(list_of_strucs, config):
     metrics = [config.getboolean('sort_by', 'accuracy'), config.getboolean('sort_by', 'precision'),
                config.getboolean('sort_by', 'recall'), config.getboolean('sort_by', 'f1')]
@@ -167,7 +199,9 @@ def sort_hall(list_of_strucs, config):
 def format_model_results(model_results):
     formatted_list = []
     for key, value in model_results.items():
-        if isinstance(value, keras.Sequential):
+        if isinstance(value, keras.Sequential) and isinstance(value.layers[0], keras.layers.Conv2D):
+            formatted_list.append(get_cnn_model_info(value))
+        elif isinstance(value, keras.Sequential):
             formatted_list.append(get_model_layers_and_activations(value))
         elif isinstance(value, str):
             formatted_list.append(f"{key}: \n{value}")

@@ -16,7 +16,7 @@ while True:
         ag = ArchGen('conf.ini')
         break
     elif paradigm == 'c' or paradigm == 'C':
-        config.read('cnn_config.ini')
+        config.read('cnn_conf.ini')
         print('You have chosen CNN!')
         ag = CArchGen('cnn_conf.ini')
         break
