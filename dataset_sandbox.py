@@ -34,8 +34,6 @@ def cifar10():
     (x_train, y_train), (x_test, y_test) = keras.datasets.cifar10.load_data()
     X = np.concatenate((x_train, x_test))
 
-    #X = np.mean(X, axis=3)
-
     X = tf.reshape(X, [60000, 32*32*3])
 
     Y = np.concatenate((y_train, y_test))
@@ -46,8 +44,27 @@ def cifar10():
     np.savetxt('Y:/PythonProjekty/Datasets/cifar10/y.csv', Y, delimiter=',')
 
 
-def penguins():
-    pass
+def titanic():
+    # Preparing titanic dataset, 2 classes (died or survived), 8 features, 627 training pairs, 264 testing pairs
+    dftrain = pd.read_csv('https://storage.googleapis.com/tf-datasets/titanic/train.csv')
+    dfeval = pd.read_csv('https://storage.googleapis.com/tf-datasets/titanic/eval.csv')
 
+    concatenated_df = pd.concat([dftrain, dfeval], axis=0, ignore_index=True)
 
-cifar10()
+    y = concatenated_df.pop('survived')
+
+    cat_features = ["sex", "class", "deck", "embark_town", "alone"]
+
+    encoded_x = pd.get_dummies(concatenated_df, columns=cat_features)
+
+    np_x = encoded_x.to_numpy()
+    np_y = y.to_numpy()
+
+    print(np_x.shape)
+    print(np_y.shape)
+
+    # Save numpy array to file
+    # np.savetxt('Y:/PythonProjekty/Datasets/titanic/x.csv', np_x, delimiter=',')
+    # np.savetxt('Y:/PythonProjekty/Datasets/titanic/y.csv', np_y, delimiter=',')
+
+titanic()

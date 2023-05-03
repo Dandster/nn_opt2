@@ -1,8 +1,6 @@
 import configparser as config
 import itertools
-
 import numpy as np
-
 import tools as t
 from tensorflow import keras
 
@@ -12,11 +10,11 @@ class ArchGen:
     def __init__(self, conf):
         self.config = config.ConfigParser()
         self.config.read(conf)
-
         self.output_neurons = self.config.getint('learning_settings', 'output_neurons')
         self.output_function = self.config['learning_settings']['output_activation']
         self.selected_loss = self.config['learning_settings']['loss_function']
         self.epochs = self.config.getint('learning_settings', 'epochs')
+        self.input_shape = (t.str_to_int_tuple(self.config['learning_settings']['input_shape'])[0])
 
     def get_learning_params(self):
         return self.selected_loss, self.epochs, self.output_neurons, self.output_function
@@ -57,11 +55,11 @@ class ArchGen:
         return x_train, y_train, x_val, y_val, x_test, y_test
 
     def generate_archs(self):
-        layers, neurons, activations_funcs = self.read_hyperpars()
+        n_layers, n_neurons, activations_funcs = self.read_hyperpars()
 
         possible_layers = []
 
-        for i in neurons:
+        for i in n_neurons:
             for j in activations_funcs:
                 layer_blueprint = keras.layers.Dense(i, activation=j)
                 possible_layers.append(layer_blueprint)
@@ -70,11 +68,12 @@ class ArchGen:
 
         layer_number = 0
 
-        for i in layers:
+        for i in n_layers:
             prod = itertools.product(possible_layers, repeat=i)
             for j in prod:
                 model = keras.Sequential()
-                #  model.add(keras.layers.Input(shape=(t.str_to_int_tuple(self.config['learning_settings']['input_shape'])[0])))
+                # model.add(keras.layers.Input(shape=(t.str_to_int_tuple(self.config['learning_settings']['input_shape'])[0])))
+                model.add(keras.layers.Input(shape=self.input_shape))
                 for layer in j:
                     con = layer.get_config()
                     cloned_layer = type(layer).from_config(con)

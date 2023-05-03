@@ -1,15 +1,12 @@
 import os
-
 import keras
 import numpy as np
 import threading
 from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, \
     f1_score
-import tensorflow as tf
-from sklearn.preprocessing import OneHotEncoder, MinMaxScaler, StandardScaler
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from tensorflow import keras
-from keras import preprocessing
 
 
 def train_model(config, model, x_train, y_train, x_val, y_val, x_test, y_test, hall_of_fame, verb):
@@ -72,9 +69,9 @@ def str_to_int_list(values):
 def str_to_int_tuple(values):
     og_values = values
     try:
-        s = "".join(values.split())
-        pairs = s.strip("()").split("),(")
-        tuples = [tuple(map(int, pair.split(","))) for pair in pairs]
+        values = "".join(values.split())
+        splits = values.strip("()").split("),(")
+        tuples = [tuple(map(int, pair.split(","))) for pair in splits]
         return tuples
     except ValueError:
         print("Reading config unsuccessful, check the formatting of: " + og_values)

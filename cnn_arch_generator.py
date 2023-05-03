@@ -24,12 +24,12 @@ class CArchGen(ArchGen):
         return number_of_layers, number_of_filters, kernel_size, pooling_size, activation_funcs
 
     def generate_archs(self):
-        layers, filters, kernel_size, pooling_size, activations_funcs = self.read_hyperpars()
+        n_layers, n_filters, kernel_size, pooling_size, activations_funcs = self.read_hyperpars()
 
         possible_conv_layers = []
         possible_pool_layers = []
 
-        for i in filters:
+        for i in n_filters:
             for j in activations_funcs:
                 for k in kernel_size:
                     layer_blueprint = keras.layers.Conv2D(i, kernel_size=k, activation=j)
@@ -41,14 +41,15 @@ class CArchGen(ArchGen):
 
         model_collection = []
 
-        layer_number = 0#  needed because every layer name must be unique
+        layer_number = 0
 
-        for i in layers:
+        for i in n_layers:
             prod = itertools.product(possible_conv_layers, repeat=i)
             for j in prod:
                 for mp in possible_pool_layers:
                     model = keras.Sequential()
-                    model.add(keras.layers.Input(shape=(t.str_to_int_tuple(self.config['learning_settings']['input_shape'])[0])))
+                    model.add(keras.layers.Input(shape=self.input_shape))
+                    # model.add(keras.layers.Input(shape=(t.str_to_int_tuple(self.config['learning_settings']['input_shape'])[0])))
                     for layer in j:
                         con = layer.get_config()
                         cloned_layer = type(layer).from_config(con)
@@ -66,9 +67,3 @@ class CArchGen(ArchGen):
                     model_collection.append(model)
 
         return model_collection
-
-
-# ag = CArchGen('cnn_conf.ini')
-# models = ag.generate_archs()
-# print(t.get_cnn_model_info(models[2]))
-
