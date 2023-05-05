@@ -49,5 +49,3 @@ end_time = time.time()
 total_time = end_time - start_time
 
 print(f"Program completed in {total_time:.2f} seconds.")
-
-

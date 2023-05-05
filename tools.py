@@ -221,8 +221,8 @@ def save_models(models, how_many, folder_path):
 
         description = format_model_results(model)
 
-        description_file_path = os.path.join(model_path, "description.txt")
-        with open(description_file_path, "w") as f:
+        description_path = os.path.join(model_path, "description.txt")
+        with open(description_path, "w") as f:
             f.write(description)
 
 

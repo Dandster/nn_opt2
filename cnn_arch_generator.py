@@ -49,7 +49,6 @@ class CArchGen(ArchGen):
                 for mp in possible_pool_layers:
                     model = keras.Sequential()
                     model.add(keras.layers.Input(shape=self.input_shape))
-                    # model.add(keras.layers.Input(shape=(t.str_to_int_tuple(self.config['learning_settings']['input_shape'])[0])))
                     for layer in j:
                         con = layer.get_config()
                         cloned_layer = type(layer).from_config(con)

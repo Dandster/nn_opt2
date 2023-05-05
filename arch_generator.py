@@ -72,7 +72,6 @@ class ArchGen:
             prod = itertools.product(possible_layers, repeat=i)
             for j in prod:
                 model = keras.Sequential()
-                # model.add(keras.layers.Input(shape=(t.str_to_int_tuple(self.config['learning_settings']['input_shape'])[0])))
                 model.add(keras.layers.Input(shape=self.input_shape))
                 for layer in j:
                     con = layer.get_config()

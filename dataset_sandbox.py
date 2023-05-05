@@ -7,10 +7,6 @@ import numpy as np
 import numpy as np
 import pandas as pd
 
-from sklearn import datasets
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder, StandardScaler, LabelEncoder
-
 
 def mnist_digits():
     (X_train, Y_train), (X_test, Y_test) = keras.datasets.mnist.load_data()
@@ -67,4 +63,3 @@ def titanic():
     # np.savetxt('Y:/PythonProjekty/Datasets/titanic/x.csv', np_x, delimiter=',')
     # np.savetxt('Y:/PythonProjekty/Datasets/titanic/y.csv', np_y, delimiter=',')
 
-titanic()
