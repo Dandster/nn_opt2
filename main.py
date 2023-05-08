@@ -4,12 +4,10 @@ import tools as t
 from arch_generator import ArchGen
 from cnn_arch_generator import CArchGen
 
-start_time = time.time()
-
 config = config.ConfigParser()
 
 while True:
-    paradigm = input('Type A for ANN or C for CNN: ')
+    paradigm = input('Type A for ANN, C for CNN or E for exit: ')
     if paradigm == 'a' or paradigm == 'A':
         config.read('conf.ini')
         print('You have chosen ANN!')
@@ -20,8 +18,11 @@ while True:
         print('You have chosen CNN!')
         ag = CArchGen('cnn_conf.ini')
         break
+    elif paradigm == 'e' or paradigm == 'E':
+        exit(0)
+        break
     else:
-        print('Funny!')
+        print('Try again')
 
 start_time = time.time()
 
@@ -37,7 +38,6 @@ model_collection = ag.generate_archs()
 t.train_models(model_collection, config, x_train, y_train, x_val, y_val, x_test, y_test, hall_of_fame)
 
 t.sort_hall(hall_of_fame, config)
-# hall_of_fame.sort(key=t.sort_by_performance, reverse=True)
 print("TRAINING COMPLETED")
 
 t.print_top_struct(config, hall_of_fame)

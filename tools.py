@@ -29,7 +29,7 @@ def train_model(config, model, x_train, y_train, x_val, y_val, x_test, y_test, h
     else:
         cr = 'Classification report was not generated'
 
-    acc, pre, rec, f1 = calculate_metrics(y_test_amax, y_pred_amax)
+    acc, pre, rec, f1 = calculate_metrics(y_test_amax, y_pred_amax, config)
 
     model_results = {'model': model, 'accuracy': acc, 'precision': pre, 'recall': rec, 'f1': f1,
                      'classification_report': cr, 'confusion_matrix': cm}
@@ -141,20 +141,19 @@ def print_classification_report(y_test, y_pred):
     return cr
 
 
-def calculate_metrics(y_test, y_pred):
+def calculate_metrics(y_test, y_pred, config):
     acc = accuracy_score(y_test, y_pred)
-    pre = precision_score(y_test, y_pred, average='weighted')
-    rec = recall_score(y_test, y_pred, average='weighted')
-    f1 = f1_score(y_test, y_pred, average='weighted')
+    pre = precision_score(y_test, y_pred, average=config["sort_by"]["metrics_type"])
+    rec = recall_score(y_test, y_pred, average=config["sort_by"]["metrics_type"])
+    f1 = f1_score(y_test, y_pred, average=config["sort_by"]["metrics_type"])
 
     return acc, pre, rec, f1
 
 
 def get_model_layers_and_activations(model):
-    #  print(f"Number of layers: {len(model.layers)}")
     desc = [f"Number of layers: {len(model.layers)}"]
+
     for i, layer in enumerate(model.layers):
-        #  print(f"Layer {i+1}: {layer.name} ({layer.activation.__name__}), Number of neurons: {layer.units}")
         desc.append(f"Layer {i + 1}: {layer.name} ({layer.activation.__name__}), Number of neurons: {layer.units}")
 
     desc = "\n".join(desc)
