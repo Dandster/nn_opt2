@@ -58,8 +58,11 @@ def titanic():
     np_x = encoded_x.to_numpy()
     np_y = y.to_numpy()
 
-    np.savetxt('Y:/PythonProjekty/Datasets/titanic/x.csv', np_x, delimiter=',')
-    np.savetxt('Y:/PythonProjekty/Datasets/titanic/y.csv', np_y, delimiter=',')
+    print(np_x.shape)
+    print(np_y.shape)
+
+    # np.savetxt('Y:/PythonProjekty/Datasets/titanic/x.csv', np_x, delimiter=',')
+    # np.savetxt('Y:/PythonProjekty/Datasets/titanic/y.csv', np_y, delimiter=',')
 
 
 def iris():
@@ -75,4 +78,17 @@ def iris():
     np.savetxt('Y:/PythonProjekty/Datasets/iris/y.csv', y, delimiter=',')
 
 
+def penguins():
+    X = pd.read_csv('https://storage.googleapis.com/download.tensorflow.org/'
+                    'data/palmer_penguins/penguins_processed.csv')
 
+    X = X.to_numpy()
+    np.random.shuffle(X)
+
+    y = X[:, :1]
+    x = X[:, 1:]
+
+    np.savetxt('Y:/PythonProjekty/Datasets/penguins/x.csv', x, delimiter=',')
+    np.savetxt('Y:/PythonProjekty/Datasets/penguins/y.csv', y, delimiter=',')
+
+titanic()
