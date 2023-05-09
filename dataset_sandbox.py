@@ -22,9 +22,14 @@ def mnist_fashion():
     (X_train, Y_train), (X_test, Y_test) = keras.datasets.fashion_mnist.load_data()
 
     X = np.concatenate((X_train, X_test))
-    X = tf.reshape(X, [70000, 28*28])
+
+    X = np.split(X, 2)[0]
+
+    X = tf.reshape(X, [35000, 28*28])
 
     Y = np.concatenate((Y_train, Y_test))
+
+    Y = np.split(Y, 2)[0]
 
     np.savetxt('Y:/PythonProjekty/Datasets/MNIST_fashion/x.csv', X, delimiter=',')
     np.savetxt('Y:/PythonProjekty/Datasets/MNIST_fashion/y.csv', Y, delimiter=',')
@@ -91,4 +96,4 @@ def penguins():
     np.savetxt('Y:/PythonProjekty/Datasets/penguins/x.csv', x, delimiter=',')
     np.savetxt('Y:/PythonProjekty/Datasets/penguins/y.csv', y, delimiter=',')
 
-titanic()
+mnist_fashion()

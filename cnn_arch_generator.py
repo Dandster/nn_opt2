@@ -37,6 +37,7 @@ class CArchGen(ArchGen):
 
         for i in pooling_size:
             layer_blueprint = keras.layers.MaxPooling2D(pool_size=i)
+            # layer_blueprint = keras.layers.MaxPooling2D(pool_size=i, padding='same')
             possible_pool_layers.append(layer_blueprint)
 
         model_collection = []

@@ -37,22 +37,60 @@ def train_model(config, model, x_train, y_train, x_val, y_val, x_test, y_test, h
     hall_of_fame.append(model_results)
 
 
+# def train_models(models, config, x_train, y_train, x_val, y_val, x_test, y_test, hall_of_fame):
+#     if config.getboolean('learning_settings', 'multithreading'):
+#         print(f'Training {len(models)} models using multithreading...')
+#         threads = []
+#         for model in models:
+#             t = threading.Thread(target=train_model, args=(config, model, x_train, y_train, x_val,
+#                                                            y_val, x_test, y_test, hall_of_fame, 0))
+#             threads.append(t)
+#             t.start()
+#
+#         for t in threads:
+#             t.join()
+#     else:
+#         print(f'Training {len(models)} models using single thread...')
+#         for model in models:
+#             train_model(config, model, x_train, y_train, x_val, y_val, x_test, y_test, hall_of_fame, 1)
+
+
 def train_models(models, config, x_train, y_train, x_val, y_val, x_test, y_test, hall_of_fame):
+
+    num_models = len(models)
+
     if config.getboolean('learning_settings', 'multithreading'):
-        print(f'Training {len(models)} models using multithreading...')
+        num_threads = min(num_models, config.getint('learning_settings', 'number_of_threads'))
+        print(f'Training {num_models} models using {num_threads} threads...')
         threads = []
-        for model in models:
-            t = threading.Thread(target=train_model, args=(config, model, x_train, y_train, x_val,
-                                                           y_val, x_test, y_test, hall_of_fame, 0))
+
+        for i in range(num_threads):
+            t = threading.Thread(target=train_models_on_thread, args=(config, models, x_train, y_train, x_val,
+                                                                      y_val, x_test, y_test, hall_of_fame, i))
             threads.append(t)
             t.start()
 
         for t in threads:
             t.join()
     else:
-        print(f'Training {len(models)} models using single thread...')
+        print(f'Training {num_models} models using a single thread...')
         for model in models:
             train_model(config, model, x_train, y_train, x_val, y_val, x_test, y_test, hall_of_fame, 1)
+
+
+def train_models_on_thread(config, models, x_train, y_train, x_val, y_val, x_test, y_test, hall_of_fame, thread_id):
+    num_models = len(models)
+    num_threads = min(num_models, config.getint('learning_settings', 'number_of_threads'))
+
+    models_per_thread = num_models // num_threads
+    start_index = thread_id * models_per_thread
+    end_index = start_index + models_per_thread
+
+    if thread_id == num_threads - 1:
+        end_index = num_models
+
+    for i in range(start_index, end_index):
+        train_model(config, models[i], x_train, y_train, x_val, y_val, x_test, y_test, hall_of_fame, 0)
 
 
 def str_to_int_list(values):
@@ -95,10 +133,6 @@ def remove_duplicates(input_list):
 def do_scaling(x):
     scaler = StandardScaler()
     return scaler.fit_transform(x)
-
-    # scaler = StandardScaler()
-    # scaler.fit(x)
-    # return scaler.transform(x)
 
 
 def do_one_hot(y):
