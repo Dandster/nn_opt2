@@ -96,4 +96,36 @@ def penguins():
     np.savetxt('Y:/PythonProjekty/Datasets/penguins/x.csv', x, delimiter=',')
     np.savetxt('Y:/PythonProjekty/Datasets/penguins/y.csv', y, delimiter=',')
 
-mnist_fashion()
+
+def dnp3():
+    training = pd.read_csv("Y:/PythonProjekty/Datasets/DNP3/training.csv")
+    testing = pd.read_csv("Y:/PythonProjekty/Datasets/DNP3/testing.csv")
+
+    print(training.head())
+
+    ds = pd.concat([training, testing], axis=0, ignore_index=True)
+
+    y = ds.pop(' Label')
+    x = ds
+
+    to_be_removed = ["flow ID", " source IP", " destination IP",
+                     " date", ' source port', ' destination port']
+
+    x.drop(columns=to_be_removed, inplace=True)
+
+    to_one_hot = [" firstPacketDIR"]
+
+    x = pd.get_dummies(x, columns=to_one_hot)
+    y = pd.get_dummies(y, columns=[' Label'])
+
+    np_x = x.to_numpy()
+    np_y = y.to_numpy()
+
+    print(np_x.shape)
+    print(np_y.shape)
+
+    # np.savetxt('Y:/PythonProjekty/Datasets/DNP3_p/x.csv', np_x, delimiter=',')
+    # np.savetxt('Y:/PythonProjekty/Datasets/DNP3_p/y.csv', np_y, delimiter=',')
+
+
+dnp3()
