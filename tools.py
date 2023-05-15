@@ -37,24 +37,6 @@ def train_model(config, model, x_train, y_train, x_val, y_val, x_test, y_test, h
     hall_of_fame.append(model_results)
 
 
-# def train_models(models, config, x_train, y_train, x_val, y_val, x_test, y_test, hall_of_fame):
-#     if config.getboolean('learning_settings', 'multithreading'):
-#         print(f'Training {len(models)} models using multithreading...')
-#         threads = []
-#         for model in models:
-#             t = threading.Thread(target=train_model, args=(config, model, x_train, y_train, x_val,
-#                                                            y_val, x_test, y_test, hall_of_fame, 0))
-#             threads.append(t)
-#             t.start()
-#
-#         for t in threads:
-#             t.join()
-#     else:
-#         print(f'Training {len(models)} models using single thread...')
-#         for model in models:
-#             train_model(config, model, x_train, y_train, x_val, y_val, x_test, y_test, hall_of_fame, 1)
-
-
 def train_models(models, config, x_train, y_train, x_val, y_val, x_test, y_test, hall_of_fame):
 
     num_models = len(models)

@@ -3,7 +3,6 @@ import tensorflow as tf
 from tensorflow import keras
 import numpy as np
 import pandas as pd
-import tensorflow_datasets as tfds
 
 
 def mnist_digits():
@@ -23,7 +22,7 @@ def mnist_fashion():
 
     X = np.concatenate((X_train, X_test))
 
-    X = np.split(X, 2)[0]
+    X = np.split(X, 2)[0]  # split in half to reduce training time
 
     X = tf.reshape(X, [35000, 28*28])
 
@@ -33,6 +32,7 @@ def mnist_fashion():
 
     np.savetxt('Y:/PythonProjekty/Datasets/MNIST_fashion/x.csv', X, delimiter=',')
     np.savetxt('Y:/PythonProjekty/Datasets/MNIST_fashion/y.csv', Y, delimiter=',')
+
 
 def cifar10():
     (x_train, y_train), (x_test, y_test) = keras.datasets.cifar10.load_data()
@@ -66,8 +66,8 @@ def titanic():
     print(np_x.shape)
     print(np_y.shape)
 
-    # np.savetxt('Y:/PythonProjekty/Datasets/titanic/x.csv', np_x, delimiter=',')
-    # np.savetxt('Y:/PythonProjekty/Datasets/titanic/y.csv', np_y, delimiter=',')
+    np.savetxt('Y:/PythonProjekty/Datasets/titanic/x.csv', np_x, delimiter=',')
+    np.savetxt('Y:/PythonProjekty/Datasets/titanic/y.csv', np_y, delimiter=',')
 
 
 def iris():
@@ -124,8 +124,5 @@ def dnp3():
     print(np_x.shape)
     print(np_y.shape)
 
-    # np.savetxt('Y:/PythonProjekty/Datasets/DNP3_p/x.csv', np_x, delimiter=',')
-    # np.savetxt('Y:/PythonProjekty/Datasets/DNP3_p/y.csv', np_y, delimiter=',')
-
-
-dnp3()
+    np.savetxt('Y:/PythonProjekty/Datasets/DNP3_p/x.csv', np_x, delimiter=',')
+    np.savetxt('Y:/PythonProjekty/Datasets/DNP3_p/y.csv', np_y, delimiter=',')
